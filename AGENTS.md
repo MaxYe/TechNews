@@ -8,7 +8,7 @@
 
 `TechNews` 是一个**每日技术新闻自动采集系统**：定时抓取 GitHub / 技术博客 / X.com 三个渠道，用本地小模型做翻译摘要、云端模型补趋势分析，产出日报与总结并自动推送到本仓库。
 
-- 详细采集规范：`tech-collect-standalone.md`
+- 详细采集规范：`doc/tech-collect-standalone.md`
 - 主编排脚本：`tech-collect/run-daily.sh`
 - 运行时数据目录 `tech-collect/tmp/` **不入库**（见 `.gitignore`）
 

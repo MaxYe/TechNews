@@ -73,7 +73,7 @@ ENABLE_GIT_PUSH=0 bash scripts/push-daily.sh  # 跳过推送
 3. **防幻觉三原则** —— 显式声明缺失、禁止推测、能算的不用模型。
 4. **多级降级** —— curl 失败→浏览器兜底→跳过并标注；本地模型不可用→云端兜底。
 
-详细设计见 [`tech-collect-standalone.md`](tech-collect-standalone.md)。
+详细设计见 [`tech-collect-standalone.md`](doc/tech-collect-standalone.md)。
 
 ## 采集统计（截至 2026-10-07）
 
