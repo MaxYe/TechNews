@@ -132,7 +132,7 @@ init → remote add → fetch → checkout -B main origin/main → add -A → co
 
 ---
 
-## 9. 已知环境问题
+## 10. 已知环境问题
 
 **文件系统写入回滚**：在某些会话中，工作区的新写入会在命令结束后被自动回滚（脚本报成功但文件未落盘）。表现为：
 
@@ -144,7 +144,7 @@ init → remote add → fetch → checkout -B main origin/main → add -A → co
 
 ---
 
-## 10. 提交前自检清单
+## 11. 提交前自检清单
 
 - [ ] 脚本语法通过（`bash -n` / `ast.parse`）
 - [ ] 没有硬编码绝对路径
@@ -153,3 +153,24 @@ init → remote add → fetch → checkout -B main origin/main → add -A → co
 - [ ] 降级链完整，失败有日志与报告记录
 - [ ] 本地 LLM 调用带 `think:false` + `num_ctx:32768`
 - [ ] `tmp/` 下的新数据路径已加入 `.gitignore`
+- [ ] 提交使用 noreply 邮箱（避免 GH007）
+
+---
+
+## 9. GitHub 推送邮箱（GH007）
+
+GitHub 会拒绝推送作者邮箱为私人邮箱的提交：
+
+    remote: error: GH007: Your push would publish a private email address.
+
+**提交时必须显式指定 noreply 邮箱**，不要依赖全局 git config：
+
+    git -c user.name=MaxYe -c user.email=MaxYe@users.noreply.github.com commit -m "..."
+
+改写已存在的提交（未推送前安全）：
+
+    git -c user.name=MaxYe -c user.email=MaxYe@users.noreply.github.com commit --amend --no-edit --author="MaxYe <MaxYe@users.noreply.github.com>"
+
+或在 GitHub 设置里关闭拦截：https://github.com/settings/emails
+
+`scripts/push-daily.sh` 已内置 noreply 邮箱，走它推送不会触发该问题。
