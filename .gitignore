@@ -1,0 +1,16 @@
+# ── 中间数据（每日重新生成，不入库）──
+tech-collect/tmp/raw/
+tech-collect/tmp/x-raw/
+tech-collect/tmp/x-raw-prev/
+tech-collect/tmp/llm-out/
+
+# ── 临时文件 ──
+tech-collect/tmp/*.html
+tech-collect/tmp/*.log
+tech-collect/tmp/Modelfile.*
+tech-collect/tmp/_probe.txt
+tech-collect/tmp/probe.txt
+
+# ── 系统文件 ──
+.DS_Store
+*.swp

@@ -1,0 +1,24 @@
+{
+  "trending_pages": {
+    "daily": "https://github.com/trending?since=daily",
+    "weekly": "https://github.com/trending?since=weekly",
+    "languages": ["python", "typescript", "javascript"]
+  },
+  "release_tracking": [
+    "anthropics/claude-code",
+    "openai/codex",
+    "crewAIInc/crewAI",
+    "langchain-ai/langgraph",
+    "modelcontextprotocol/servers",
+    "continuedev/continue",
+    "microsoft/autogen",
+    "Aider-AI/aider"
+  ],
+  "topic_keywords": {
+    "AI Coding": ["code", "coding", "IDE", "editor", "copilot", "cursor", "claude code", "codex", "aider", "continue", "windsurf"],
+    "Agent 框架": ["agent", "multi-agent", "ReAct", "tool calling", "autonomous", "swarm"],
+    "Agent Harness/Skills": ["harness", "skill", "MCP", "memory", "context", "observ"],
+    "MCP 协议": ["MCP", "model context protocol", "server"],
+    "LLM 基础设施": ["inference", "transformer", "fine-tune", "RAG", "embedding", "vector"]
+  }
+}

@@ -1,0 +1,318 @@
+{
+  "description": "X.com/Twitter 技术观察采集源配置",
+  "update_frequency": "daily",
+  "time_window_days": 3,
+  "collection_strategies": [
+    {
+      "priority": 1,
+      "name": "mearl_browser",
+      "desc": "Mearl 复用浏览器登录态：page_navigate + page_scroll + page_eval 抽取 DOM（首选，已验证可用）",
+      "reliability": "high"
+    },
+    {
+      "priority": 2,
+      "name": "x_api",
+      "desc": "X API v2 Basic Tier（付费 $100/月，无浏览器环境时用）",
+      "reliability": "high"
+    },
+    {
+      "priority": 3,
+      "name": "websearch",
+      "desc": "WebSearch 间接覆盖（降级，覆盖面不全）",
+      "reliability": "medium"
+    },
+    {
+      "priority": 4,
+      "name": "nitter_rss",
+      "desc": "Nitter 等第三方 RSS 代理（当前网络下不可达，仅作外部环境备选）",
+      "reliability": "low"
+    }
+  ],
+  "mearl": {
+    "setup": "npx @mearl/setup --yes",
+    "browser_check": "mearl browser_list",
+    "domain_permission": "mearl request_domain_permission --payload '{\"domain\":\"x.com\"}'",
+    "collect_script": "tech-collect/tmp/x-collect.sh",
+    "retry_script": "tech-collect/tmp/x-collect-retry.sh"
+  },
+  "nitter_instances": [
+    "https://nitter.poast.org",
+    "https://nitter.privacydev.net",
+    "https://twiiit.com"
+  ],
+  "sources": {
+    "tier1_official": [
+      {
+        "username": "OpenAI",
+        "display_name": "OpenAI",
+        "role": "公司官方",
+        "category": "OpenAI",
+        "reason": "模型发布、招聘、公司动态一手来源",
+        "priority": "critical"
+      },
+      {
+        "username": "GoogleDeepMind",
+        "display_name": "Google DeepMind",
+        "role": "公司官方",
+        "category": "Google DeepMind",
+        "reason": "前沿研究发布，AI 科研风向标",
+        "priority": "critical"
+      },
+      {
+        "username": "AnthropicAI",
+        "display_name": "Anthropic",
+        "role": "公司官方",
+        "category": "Anthropic",
+        "reason": "Claude 版本发布、安全政策、研究进展",
+        "priority": "critical"
+      },
+      {
+        "username": "claudeai",
+        "display_name": "Claude (产品官方)",
+        "role": "产品官方",
+        "category": "Anthropic",
+        "reason": "Claude 产品更新、新功能发布",
+        "priority": "critical"
+      }
+    ],
+    "tier2_key_people": [
+      {
+        "username": "sama",
+        "display_name": "Sam Altman",
+        "role": "CEO",
+        "category": "OpenAI",
+        "reason": "产品路线与公司战略最直接来源，影响力最大",
+        "priority": "high"
+      },
+      {
+        "username": "gdb",
+        "display_name": "Greg Brockman",
+        "role": "President & 联合创始人",
+        "category": "OpenAI",
+        "reason": "工程与基础设施核心，偶尔分享技术文化与进展",
+        "priority": "high"
+      },
+      {
+        "username": "markchen90",
+        "display_name": "Mark Chen",
+        "role": "Chief Research Officer",
+        "category": "OpenAI",
+        "reason": "研究领导层，参与前沿模型决策",
+        "priority": "high"
+      },
+      {
+        "username": "merettm",
+        "display_name": "Jakub Pachocki",
+        "role": "Chief Scientist",
+        "category": "OpenAI",
+        "reason": "现任首席科学家，负责整体研究议程",
+        "priority": "high"
+      },
+      {
+        "username": "polynoamial",
+        "display_name": "Noam Brown",
+        "role": "推理/o系列核心贡献者",
+        "category": "OpenAI",
+        "reason": "超级人类扑克AI、CICERO、o系列推理模型关键人物，内容质量极高",
+        "priority": "high"
+      },
+      {
+        "username": "NoamShazeer",
+        "display_name": "Noam Shazeer",
+        "role": "架构研究负责人",
+        "category": "OpenAI",
+        "reason": "Transformer、MoE传奇人物，架构层面必关注",
+        "priority": "high"
+      },
+      {
+        "username": "thsottiaux",
+        "display_name": "Thibault Sottiaux (Tibo)",
+        "role": "ChatGPT/Codex 工程负责人",
+        "category": "OpenAI",
+        "reason": "产品与工程落地视角，更新频率较高",
+        "priority": "high"
+      },
+      {
+        "username": "DarioAmodei",
+        "display_name": "Dario Amodei",
+        "role": "CEO & 联合创始人",
+        "category": "Anthropic",
+        "reason": "研究方向总舵手，偶尔发长文谈scaling、安全与未来愿景",
+        "priority": "high"
+      },
+      {
+        "username": "ch402",
+        "display_name": "Chris Olah",
+        "role": "可解释性负责人 & 联合创始人",
+        "category": "Anthropic",
+        "reason": "机械可解释性领域开创者，内容深度极高",
+        "priority": "high"
+      },
+      {
+        "username": "jackclarkSF",
+        "display_name": "Jack Clark",
+        "role": "联合创始人、政策/公共事务负责人",
+        "category": "Anthropic",
+        "reason": "前Import AI作者，政策与安全视角独特",
+        "priority": "high"
+      },
+      {
+        "username": "bcherny",
+        "display_name": "Boris Cherny",
+        "role": "Claude Code 创建者 / Staff Engineer",
+        "category": "Anthropic",
+        "reason": "展示Claude工具链内部使用方式，实战向内容",
+        "priority": "high"
+      },
+      {
+        "username": "alexalbert__",
+        "display_name": "Alex Albert",
+        "role": "开发者关系 / 研究相关",
+        "category": "Anthropic",
+        "reason": "第一时间分享Claude新能力与开发者洞察",
+        "priority": "high"
+      },
+      {
+        "username": "AmandaAskell",
+        "display_name": "Amanda Askell",
+        "role": "Alignment/价值观相关",
+        "category": "Anthropic",
+        "reason": "参与Claude价值观塑造，理解模型行为的好入口",
+        "priority": "high"
+      },
+      {
+        "username": "DanielaAmodei",
+        "display_name": "Daniela Amodei",
+        "role": "President & 联合创始人",
+        "category": "Anthropic",
+        "reason": "偏运营与整体方向，偶尔有公司级重要信息",
+        "priority": "high"
+      }
+    ],
+    "tier3_bonus": [
+      {
+        "username": "dotey",
+        "display_name": "宝玉",
+        "role": "AI Engineer",
+        "category": "中文区",
+        "reason": "中文区最知名的AI技术博主之一，Prompt工程、大模型实战常客",
+        "priority": "medium"
+      },
+      {
+        "username": "karpathy",
+        "display_name": "Andrej Karpathy",
+        "role": "前OpenAI / 教育家",
+        "category": "额外补充",
+        "reason": "教学与从零实现视角无可替代，ai-tokenizer等开源项目作者",
+        "priority": "medium"
+      },
+      {
+        "username": "ilyasut",
+        "display_name": "Ilya Sutskever",
+        "role": "前OpenAI首席科学家 / SSI",
+        "category": "额外补充",
+        "reason": "安全与超级智能相关思考仍具极高参考价值",
+        "priority": "medium"
+      }
+    ]
+  },
+  "topic_keywords": {
+    "AI Coding": [
+      "code generation",
+      "code",
+      "coding",
+      "claude code",
+      "codex",
+      "cursor",
+      "copilot",
+      "coding agent",
+      "AI coding",
+      "code review",
+      "developer",
+      "engineer",
+      "deletion",
+      "simplification",
+      "refactor"
+    ],
+    "Agent": [
+      "agent",
+      "agents",
+      "agentic",
+      "tool calling",
+      "multi-agent",
+      "autonomous",
+      "agent framework",
+      "dot",
+      "dots",
+      "workflow",
+      "orchestration"
+    ],
+    "Harness": [
+      "harness",
+      "guardrail",
+      "guardrails",
+      "verification",
+      "evaluation",
+      "evals",
+      "safety",
+      "alignment",
+      "context",
+      "memory",
+      "risk",
+      "trust",
+      "judgment",
+      "reliability",
+      "security",
+      "cybersecurity"
+    ],
+    "Tech Trends": [
+      "model release",
+      "model",
+      "models",
+      "GPT-6",
+      "GPT",
+      "Claude",
+      "Gemini",
+      "benchmark",
+      "funding",
+      "acquisition",
+      "scaling",
+      "infrastructure",
+      "partnership",
+      "Cerebras",
+      "usage",
+      "API",
+      "release",
+      "platform",
+      "roadmap"
+    ],
+    "Research": [
+      "paper",
+      "research",
+      "interpretability",
+      "mechanistic",
+      "transformer",
+      "architecture",
+      "LLM",
+      "language model",
+      "understanding",
+      "outputs",
+      "knowledge",
+      "eval",
+      "discovery",
+      "science"
+    ]
+  },
+  "output_format": {
+    "per_account": false,
+    "aggregated": true,
+    "top_n_tweets_per_account": 5,
+    "sort_by": "engagement",
+    "require_min_engagement": {
+      "likes": 50,
+      "retweets": 10
+    },
+    "include_retweets": false,
+    "include_replies": false
+  }
+}

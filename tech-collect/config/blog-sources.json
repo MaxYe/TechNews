@@ -1,0 +1,184 @@
+{
+  "tier1": [
+    {
+      "name": "Google AI Blog",
+      "url": "https://blog.google/innovation-and-ai/technology/ai/",
+      "rss": "https://blog.google/innovation-and-ai/technology/ai/rss/",
+      "method": "rss"
+    },
+    {
+      "name": "OpenAI Blog",
+      "url": "https://openai.com/news/",
+      "rss": "https://openai.com/news/rss.xml",
+      "method": "rss"
+    },
+    {
+      "name": "Anthropic News",
+      "url": "https://www.anthropic.com/news/",
+      "rss": null,
+      "method": "webfetch"
+    },
+    {
+      "name": "Hacker News",
+      "url": "https://news.ycombinator.com/",
+      "rss": null,
+      "method": "algolia_api",
+      "api": "http://hn.algolia.com/api/v1/search_by_date?tags=front_page&hitsPerPage=30"
+    },
+    {
+      "name": "Simon Willison",
+      "url": "https://simonwillison.net/",
+      "rss": "https://simonwillison.net/atom/everything/",
+      "method": "rss"
+    },
+    {
+      "name": "InfoQ 中国",
+      "url": "https://www.infoq.cn/",
+      "rss": null,
+      "method": "webfetch"
+    }
+  ],
+  "tier2": [
+    {
+      "name": "Latent Space",
+      "url": "https://www.latent.space/",
+      "rss": "https://www.latent.space/feed",
+      "method": "rss_with_browser_fallback",
+      "note": "Substack 源偶发连接失败，curl 失败时自动走 mearl 浏览器兜底"
+    },
+    {
+      "name": "Meta AI Blog",
+      "url": "https://ai.meta.com/blog/",
+      "rss": null,
+      "method": "webfetch"
+    },
+    {
+      "name": "HuggingFace Blog",
+      "url": "https://huggingface.co/blog",
+      "rss": null,
+      "method": "webfetch"
+    },
+    {
+      "name": "Microsoft AI Blog",
+      "url": "https://blogs.microsoft.com/ai/",
+      "rss": "https://blogs.microsoft.com/ai/feed/",
+      "method": "rss"
+    },
+    {
+      "name": "Eugene Yan",
+      "url": "https://eugeneyan.com/",
+      "rss": "https://eugeneyan.com/rss/",
+      "method": "rss"
+    },
+    {
+      "name": "Chip Huyen",
+      "url": "https://huyenchip.com/",
+      "rss": "https://huyenchip.com/feed.xml",
+      "method": "rss"
+    }
+  ],
+  "tier3": [
+    {
+      "name": "机器之心",
+      "url": "https://www.jiqizhixin.com/",
+      "rss": null,
+      "method": "webfetch"
+    },
+    {
+      "name": "量子位",
+      "url": "https://www.qbitai.com/",
+      "rss": "https://www.qbitai.com/feed",
+      "method": "rss"
+    }
+  ],
+  "known_blocked": [
+    "anthropic.com",
+    "ai.meta.com",
+    "huggingface.co/blog",
+    "blogs.microsoft.com/ai"
+  ],
+  "topic_keywords": {
+    "AI Coding": [
+      "code generation",
+      "code",
+      "coding",
+      "IDE",
+      "coding assistant",
+      "code review",
+      "copilot",
+      "claude code",
+      "claude-code",
+      "cursor",
+      "codex",
+      "developer",
+      "engineer",
+      "refactor",
+      "programming"
+    ],
+    "Agent": [
+      "agent",
+      "agents",
+      "agentic",
+      "autonomous",
+      "tool calling",
+      "multi-agent",
+      "workflow",
+      "orchestration",
+      "MCP"
+    ],
+    "Harness": [
+      "harness",
+      "guardrail",
+      "guardrails",
+      "verification",
+      "verify",
+      "observability",
+      "evaluation",
+      "eval",
+      "evals",
+      "evaluat",
+      "state management",
+      "fault tolerance",
+      "safety",
+      "security",
+      "alignment",
+      "testing",
+      "benchmark",
+      "reliability"
+    ],
+    "Tech Trends": [
+      "model release",
+      "release",
+      "funding",
+      "acquisition",
+      "regulation",
+      "open source",
+      "benchmark",
+      "model",
+      "models",
+      "GPT",
+      "Claude",
+      "Gemini",
+      "infrastructure",
+      "AI",
+      "enterprise",
+      "platform",
+      "adoption",
+      "training"
+    ]
+  },
+  "collection_fallback": {
+    "trigger": "curl 非 200 或返回内容不是合法 RSS/Atom（如 Cloudflare 拦截页）",
+    "method": "mearl 浏览器兜底：tmp/fetch-via-browser.sh <url> <out>（页面内 fetch 携带会话 Cookie）",
+    "note": "可突破 Cloudflare 挑战与登录墙；需 Chrome 登录 + mearl 连接",
+    "newly_verified_sources": {
+      "hnrss.org": "https://hnrss.org/frontpage（Hacker News 代理，Algolia API 被拦时使用）",
+      "infoq-cn": "https://www.infoq.cn/feed（InfoQ 中国，可用）",
+      "anthropic-news": "https://www.anthropic.com/news（HTML 源，需单独解析）",
+      "google-ai": "https://blog.google/innovation-and-ai/technology/ai/rss/（地址已迁移）"
+    }
+  },
+  "known_unreachable": [
+    "simonwillison.net（2026-10-05 起网络层被拦，DNS 解析异常）"
+  ]
+}
