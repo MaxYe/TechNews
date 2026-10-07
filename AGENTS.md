@@ -1,10 +1,12 @@
 # AGENTS.md
 
+This file provides guidance to Qoder (qoder.com) when working with code in this repository.
+
 面向 AI 编码代理的项目说明。**开始修改前请先读完本文件。**
 
 ---
 
-## 1. 项目是什么
+## 1. 项目概述
 
 `TechNews` 是一个**每日技术新闻自动采集系统**：定时抓取 GitHub / 技术博客 / X.com 三个渠道，用本地小模型做翻译摘要、云端模型补趋势分析，产出日报与总结并自动推送到本仓库。
 
@@ -14,16 +16,28 @@
 
 ---
 
-## 2. 目录约定（重要）
+## 2. 目录约定与数据流
 
 ```
 tech-collect/
 ├── run-daily.sh      # 主编排（采集 Part1-3 + 预处理 Part4）
-├── config/           # 源配置，改采集范围改这里
+├── config/           # 源配置 JSON，改采集范围改这里
 ├── scripts/          # 所有可执行脚本（不要把脚本放别处）
 ├── output/           # 三渠道日报（入库）
 ├── summary/          # 每日/每周总结（入库）
 └── tmp/              # 运行时数据（不入库，可随时清理）
+```
+
+**数据流路径（Part 1-4 → 云端 → 推送）**：
+
+```
+Part 1: GitHub      → tmp/raw/{DATE}/github-daily.json
+Part 2: 博客         → tmp/raw/{DATE}/blog-*.xml + anthropic-news.html
+Part 3: X.com       → tmp/x-raw/{username}.json
+Part 4: 本地 LLM     → tmp/llm-out/{DATE}/{github,blog,x}.json
+                     → output/{channel}/{DATE}-local9b.md（骨架）
+云端模型读富化 JSON  → output/{channel}/{DATE}.md + summary/{DATE}.md
+push-daily.sh       → git commit + push
 ```
 
 **硬性约定**：
@@ -45,6 +59,8 @@ tech-collect/
 **核心设计：模型只出内容，结构由代码组装。**
 让模型直接输出完整 Markdown 会导致编号错乱、格式漂移。正确做法是让模型输出 JSON（如 `[{"i":0,"summary":"..."}]`），再由代码拼装结构。
 
+**配置驱动分类打标**：`config/*-sources.json` 中的 `topic_keywords` 字段定义关键词到标签的映射，`local-prep.py` 的 `classify()` 函数用纯关键词匹配（不经模型）为条目打标签。
+
 ---
 
 ## 4. 本地 LLM 调用契约（配错就跑不起来）
@@ -64,7 +80,11 @@ tech-collect/
 | `num_ctx` | `32768` | 模型原生 256K，但 ollama **默认只给 4096**，稍长文本即被截断 |
 | `temperature` | `0.3` | 默认 1.0 输出发散、术语不一致 |
 
-**内存约束**：`qwen3.5-32k` 加载需约 **9.2GB**。`run-daily.sh` 会先检测可用内存，充足才启动 ollama，任务结束后关闭释放。修改 Part 4 时不要破坏这个逻辑。
+**内存约束**：`qwen3.5-32k` 加载需约 **9.2GB**。`run-daily.sh` 会先检测可用内存（`OLLAMA_MEM_NEED_GB` 环境变量可调，默认 10.0），充足才启动 ollama，任务结束后关闭释放。修改 Part 4 时不要破坏这个逻辑。
+
+**Skill Helper 依赖**：`local-prep.py` 通过外部 skill helper（路径 `~/.dsh/skills/local-llm-translate-summarize/scripts/local_llm.py`）执行批量翻译/摘要。Helper 提供 `batch-translate` 和 `batch-summary` 两种命令。
+
+**漏条补齐机制**：`call_skill_with_fill()` 对模型随机漏返的条目做最多 3 轮小批次重试（批次逐步缩小到 1），仍缺失则用占位符标记。
 
 ---
 
@@ -95,7 +115,7 @@ tech-collect/
 
 ---
 
-## 7. 常用命令
+## 7. 常用命令与环境变量
 
 ```bash
 cd tech-collect
@@ -105,13 +125,20 @@ bash run-daily.sh [YYYY-MM-DD]
 
 # 单环节
 python3 scripts/local-prep.py all --date YYYY-MM-DD   # 本地 LLM 预处理
+python3 scripts/local-prep.py github --date YYYY-MM-DD # 只处理 GitHub
+python3 scripts/local-prep.py blog --date YYYY-MM-DD   # 只处理博客
+python3 scripts/local-prep.py x --date YYYY-MM-DD      # 只处理 X.com
 python3 scripts/local-prep.py ping                    # 连通性检查
 bash scripts/x-collect.sh [账号...]                   # X.com 采集
+bash scripts/x-collect-retry.sh [账号...]             # X.com 补采（带轮询等待）
 bash scripts/push-daily.sh [YYYY-MM-DD]               # 提交并推送
 
-# 开关
-ENABLE_LOCAL_LLM=0 bash run-daily.sh
-ENABLE_GIT_PUSH=0 bash scripts/push-daily.sh
+# 环境变量开关
+ENABLE_LOCAL_LLM=0 bash run-daily.sh          # 跳过本地预处理
+ENABLE_GIT_PUSH=0 bash scripts/push-daily.sh   # 跳过推送
+TIME_WINDOW=7 python3 scripts/local-prep.py all  # 采集时间窗口（天），默认 3
+BATCH_SIZE=4 python3 scripts/local-prep.py all   # LLM 每批条数，默认 5
+OLLAMA_MEM_NEED_GB=12 bash run-daily.sh          # 内存阈值，默认 10.0
 ```
 
 改完脚本**务必**跑 `bash -n <script>`（shell）或 `python3 -c "import ast;ast.parse(open(f).read())"`（python）验证语法。
@@ -132,7 +159,7 @@ init → remote add → fetch → checkout -B main origin/main → add -A → co
 
 ---
 
-## 10. 已知环境问题
+## 9. 已知环境问题
 
 **文件系统写入回滚**：在某些会话中，工作区的新写入会在命令结束后被自动回滚（脚本报成功但文件未落盘）。表现为：
 
@@ -144,7 +171,7 @@ init → remote add → fetch → checkout -B main origin/main → add -A → co
 
 ---
 
-## 11. 提交前自检清单
+## 10. 提交前自检清单
 
 - [ ] 脚本语法通过（`bash -n` / `ast.parse`）
 - [ ] 没有硬编码绝对路径
@@ -157,7 +184,7 @@ init → remote add → fetch → checkout -B main origin/main → add -A → co
 
 ---
 
-## 9. GitHub 推送邮箱（GH007）
+## 11. GitHub 推送邮箱（GH007）
 
 GitHub 会拒绝推送作者邮箱为私人邮箱的提交：
 
