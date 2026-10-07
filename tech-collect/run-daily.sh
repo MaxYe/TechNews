@@ -11,10 +11,13 @@ BASE="$(cd "$(dirname "$0")" && pwd)"
 OUT_GITHUB="$BASE/output/github"
 OUT_BLOG="$BASE/output/blog"
 OUT_X="$BASE/output/x"
-TMP="$BASE/tmp"
+SCRIPTS="$BASE/scripts"      # 可执行脚本
+TMP="$BASE/tmp"              # 运行时中间数据
 RAW="$TMP/raw/$DATE"
 RAWX="$TMP/x-raw"
-mkdir -p "$OUT_GITHUB" "$OUT_BLOG" "$OUT_X" "$RAW" "$RAWX"
+LLM_OUT="$TMP/llm-out/$DATE"
+SUMMARY_DIR="$BASE/summary"
+mkdir -p "$OUT_GITHUB" "$OUT_BLOG" "$OUT_X" "$RAW" "$RAWX" "$SUMMARY_DIR"
 
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 
@@ -95,7 +98,7 @@ while IFS='|' read -r name url; do
 
   # 兜底：curl 非 200 或内容不是 RSS 时，改用浏览器抓取突破 Cloudflare
   if [ "$is_rss" = "0" ] && command -v mearl >/dev/null 2>&1; then
-    bash "$TMP/fetch-via-browser.sh" "$url" "$RAW/blog-$name.xml" >/dev/null 2>&1
+    bash "$SCRIPTS/fetch-via-browser.sh" "$url" "$RAW/blog-$name.xml" >/dev/null 2>&1
     if [ -f "$RAW/blog-$name.xml" ] && head -c 400 "$RAW/blog-$name.xml" | grep -qE '<\?xml|<rss|<feed|<channel'; then
       size=$(wc -c < "$RAW/blog-$name.xml")
       printf "  %-14s 🖥 mearl  %8s bytes  (curl %s → 浏览器兜底)\n" "$name" "$size" "$code"
@@ -118,7 +121,7 @@ done
 if [ "${asize:-0}" -gt 5000 ]; then
   printf "  %-14s HTTP %s  %8s bytes\n" "anthropic-news" "$acode" "$asize"
 elif command -v mearl >/dev/null 2>&1; then
-  bash "$TMP/fetch-via-browser.sh" "https://www.anthropic.com/news" "$RAW/anthropic-news.html" >/dev/null 2>&1
+  bash "$SCRIPTS/fetch-via-browser.sh" "https://www.anthropic.com/news" "$RAW/anthropic-news.html" >/dev/null 2>&1
   asize=0; [ -f "$RAW/anthropic-news.html" ] && asize=$(wc -c < "$RAW/anthropic-news.html")
   printf "  %-14s 🖥 mearl  %8s bytes  (curl %s → 浏览器兜底)\n" "anthropic-news" "$asize" "$acode"
 else
@@ -130,7 +133,7 @@ log "📦 Part 3: X.com（Mearl 复用浏览器登录态）"
 if command -v mearl >/dev/null 2>&1; then
   conn=$(mearl browser_list 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('connectedCount',0))" 2>/dev/null || echo 0)
   if [ "${conn:-0}" -ge 1 ]; then
-    bash "$TMP/x-collect.sh" 2>&1 | tail -25
+    bash "$SCRIPTS/x-collect.sh" 2>&1 | tail -25
   else
     log "  ⚠️ mearl 未连接浏览器（connectedCount=$conn），跳过 X.com。请先登录 Chrome 并启用 Mearl 扩展"
   fi
@@ -192,7 +195,7 @@ if [ "${ENABLE_LOCAL_LLM:-1}" = "1" ]; then
       ollama create qwen3.5-32k -f "$TMP/Modelfile.qwen32k" 2>&1 | tail -2
     fi
     # 3) 执行本地预处理
-    python3 "$TMP/local-prep.py" all --date "$DATE" 2>&1 | tail -30
+    python3 "$SCRIPTS/local-prep.py" all --date "$DATE" 2>&1 | tail -30
   else
     log "  ⚠️ ollama 不可用，跳过本地预处理（云端兜底）"
   fi
@@ -211,16 +214,19 @@ if [ -n "$OLLAMA_STARTED_BY_US" ]; then
   log "  ✓ ollama 已关闭（PID $OLLAMA_STARTED_BY_US）"
 fi
 
-# ---------- 汇总 ----------
+# ---------- 汇总与下一步 ----------
 echo "============================================="
-log "采集完成，汇总："
+log "采集 + 预处理完成，汇总："
 log "  原始数据: $RAW/"
 log "  X 数据:   $RAWX/*.json ($(ls "$RAWX"/*.json 2>/dev/null | wc -l | tr -d ' ') 个账号)"
-log "  本地富化: tmp/llm-out/$DATE/{github,blog,x}.json（供云端模型读，替代原始英文数据）"
+log "  本地富化: $LLM_OUT/{github,blog,x}.json"
 log "  报告骨架: output/{github,blog,x}/$DATE-local9b.md"
-log ""
-log "云端模型只需：读 tmp/llm-out/$DATE/*.json + 补「跨源趋势分析」"
+echo ""
+log "【下一步】云端模型：读 $LLM_OUT/*.json → 产出日报与总结"
 log "  - $OUT_GITHUB/$DATE.md"
 log "  - $OUT_BLOG/$DATE.md"
 log "  - $OUT_X/$DATE.md"
+log "  - $SUMMARY_DIR/$DATE.md          （每日总结）"
+log "  - $SUMMARY_DIR/$DATE-weekly.md   （每周总结，周日生成）"
+log "【最后】推送：bash $SCRIPTS/push-daily.sh $DATE"
 echo "============================================="

@@ -2,7 +2,7 @@
 # X.com 批量采集脚本 — 使用 mearl 浏览器登录态
 # 用法: bash x-collect.sh [账号1 账号2 ...]   (不传则采配置里全部账号)
 
-WS="/Users/yefan/Works/TechNews/tech-collect"
+WS="$(cd "$(dirname "$0")/.." && pwd)"   # 仓库根 tech-collect/
 RAW="$WS/tmp/x-raw"
 CONFIG="$WS/config/x-sources.json"
 EXTRACT_JS="$(cd "$(dirname "$0")" && pwd)/x-extract.js"

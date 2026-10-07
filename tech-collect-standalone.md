@@ -1,8 +1,8 @@
 # 外网技术信息采集（独立版）
 
-> 版本：4.0 | 2026-10-05
-> 包含：GitHub Trending 采集 + 外部技术博客采集 + X.com 技术观察采集 + 本地 LLM 预处理
-> 特性：完全独立，无外部目录依赖，输出路径由调用者指定；X.com 采集采用 Mearl 复用浏览器登录态；翻译/摘要由本地 Ollama 承担，云端只做趋势分析
+> 版本：5.0 | 2026-10-07
+> 包含：GitHub Trending 采集 + 外部技术博客采集 + X.com 技术观察采集 + 本地 LLM 预处理 + 每日/每周总结 + Git 推送
+> 特性：完全独立，无外部目录依赖，输出路径由调用者指定；X.com 采集采用 Mearl 复用浏览器登录态；翻译/摘要由本地 Ollama 承担，云端只做趋势分析与总结
 
 ---
 
@@ -10,21 +10,29 @@
 
 ```
 tech-collect/
-├── README.md                    # 本文件
-├── run-daily.sh                 # 主编排：串起 Part 1-4
-├── config/
-│   ├── github-sources.json      # Release 追踪仓库列表、语言分榜
-│   ├── blog-sources.json        # 源列表、Tier 分级、RSS 地址
-│   └── x-sources.json           # X.com 关注账号列表、采集策略
-├── output/                      # 默认输出目录（可覆盖）
-│   ├── github/
-│   ├── blog/
-│   └── x/
-└── tmp/                         # 中间文件（7 天后可清理）
-    ├── local-prep.py            # Part 0 实现：本地 LLM 翻译/摘要
-    ├── llm-out/{DATE}/          # 中文富化 JSON（供云端模型读）
-    ├── x-collect.sh             # X.com 采集（Mearl 驱动）
-    └── fetch-via-browser.sh     # Cloudflare/登录墙兜底
+├── run-daily.sh                 # 主编排：采集 + 预处理（Part 1-4）
+├── config/                      # 源配置（3 渠道）
+│   ├── github-sources.json
+│   ├── blog-sources.json
+│   └── x-sources.json
+├── scripts/                     # 可执行脚本（从旧 tmp/ 迁入）
+│   ├── local-prep.py            # Part 0 实现：本地 LLM 翻译/摘要
+│   ├── x-collect.sh             # X.com 采集（Mearl 驱动）
+│   ├── x-collect-retry.sh       # X.com 补采（带轮询）
+│   ├── x-extract.js             # X.com DOM 抽取片段
+│   ├── fetch-via-browser.sh     # Cloudflare/登录墙兜底
+│   └── push-daily.sh            # 每日 Git 提交+推送
+├── output/                      # 三渠道日报
+│   ├── github/                  #   github/{DATE}.md
+│   ├── blog/                    #   blog/{DATE}.md
+│   └── x/                       #   x/{DATE}.md
+├── summary/                     # 每日/每周总结
+│   ├── {DATE}.md                #   每日总结
+│   └── {DATE}-weekly.md         #   每周总结（周日生成）
+└── tmp/                         # 运行时中间数据（不入库，7 天可清理）
+    ├── raw/{DATE}/              # 采集原始数据
+    ├── x-raw/                   # X.com 原始推文 JSON
+    └── llm-out/{DATE}/          # 中文富化 JSON（供云端模型读）
 ```
 
 ## 执行链路总览
@@ -36,7 +44,11 @@ run-daily.sh
   Part 3: X.com 采集（Mearl）     → tmp/x-raw/*.json
   Part 4: 本地 LLM 预处理（Part 0）→ tmp/llm-out/{DATE}/*.json + output/*/{DATE}-local9b.md
   ↓
-云端模型：读 tmp/llm-out/{DATE}/*.json（已翻译+已分类）→ 补「跨源趋势分析」→ 产出完整日报
+云端模型：读 tmp/llm-out/{DATE}/*.json（已翻译+已分类）
+  → 产出三渠道日报 output/{github,blog,x}/{DATE}.md
+  → 产出每日总结 summary/{DATE}.md（＋每周日 summary/{DATE}-weekly.md）
+  ↓
+最后：bash scripts/push-daily.sh {DATE}   # 提交并推送全部内容到 GitHub
 ```
 
 ---
@@ -125,11 +137,11 @@ items.json
 
 ```bash
 # 独立执行
-python3 tmp/local-prep.py ping                    # 连通性检查
-python3 tmp/local-prep.py github --date YYYY-MM-DD
-python3 tmp/local-prep.py blog   --date YYYY-MM-DD
-python3 tmp/local-prep.py x      --date YYYY-MM-DD
-python3 tmp/local-prep.py all    --date YYYY-MM-DD
+python3 scripts/local-prep.py ping                    # 连通性检查
+python3 scripts/local-prep.py github --date YYYY-MM-DD
+python3 scripts/local-prep.py blog   --date YYYY-MM-DD
+python3 scripts/local-prep.py x      --date YYYY-MM-DD
+python3 scripts/local-prep.py all    --date YYYY-MM-DD
 
 # 随每日任务自动执行（run-daily.sh Part 4）
 ENABLE_LOCAL_LLM=1 bash run-daily.sh   # 默认开；ollama/模型不可用则自动跳过（云端兜底）
@@ -493,7 +505,7 @@ curl -s "http://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=30&nume
 当 curl 非 200 **或** 返回内容不是合法 RSS/Atom（Cloudflare 拦截页可能是 200/403 且体积不小）时，自动改用 mearl 浏览器抓取：
 
 ```bash
-bash tmp/fetch-via-browser.sh "<feed_url>" "<out_file>"
+bash scripts/fetch-via-browser.sh "<feed_url>" "<out_file>"
 ```
 
 原理：先在同源页面打开跳板，再在页面上下文内执行 `fetch()`，自动携带浏览器会话 Cookie，可穿透 Cloudflare 托管挑战与登录墙。
@@ -675,7 +687,7 @@ bash tmp/fetch-via-browser.sh "<feed_url>" "<out_file>"
 
 ### Step 1: 批量抓取（Mearl 自动化）
 
-对每个账号执行「导航 → 滚动加载 → JS 抽取」三步（已封装为 `tmp/x-collect.sh` 一键执行）：
+对每个账号执行「导航 → 滚动加载 → JS 抽取」三步（已封装为 `scripts/x-collect.sh` 一键执行）：
 
 ```bash
 # 0. 确认浏览器连接（应返回 connected）
@@ -708,7 +720,7 @@ mearl page_eval --payload '{"tabId":{TAB},"expression":"<抽取JS表达式>"}'
 | 书签数 | aria-label 含「书签」片段中的数字 |
 | 浏览数 | `a[aria-label*="查看"]` 的 aria-label 首个数字 |
 
-> 参考实现见 `tech-collect/tmp/x-collect.sh`（含完整抽取 JS 与批量循环）。
+> 参考实现见 `tech-collect/scripts/x-collect.sh`（含完整抽取 JS 与批量循环）。
 
 账号间导航间隔 3 秒；页面加载慢导致抽到 0 条时，用「轮询等待」：导航后每 3 秒查一次 `document.querySelectorAll('article[data-testid="tweet"]').length`，≥ 3 条再抽取，最多等 15 秒。
 

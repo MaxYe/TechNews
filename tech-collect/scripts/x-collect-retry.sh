@@ -1,6 +1,6 @@
 #!/bin/bash
 # 补采脚本 — 带轮询等待，导航后轮询直到推文加载
-WS="/Users/yefan/Works/TechNews/tech-collect"
+WS="$(cd "$(dirname "$0")/.." && pwd)"   # 仓库根 tech-collect/
 RAW="$WS/tmp/x-raw"
 EXTRACT_JS="$(cd "$(dirname "$0")" && pwd)/x-extract.js"
 
