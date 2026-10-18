@@ -76,7 +76,10 @@ json.dump(repos, open(sys.argv[2], 'w'), ensure_ascii=False, indent=2)
 print(f"  GitHub: {len(repos)} 个仓库")
 PYEOF
 else
-  log "  ⚠️ GitHub daily HTML 为空"
+  # 只有 gh 也失败时才是异常；GH_OK=1 属正常路径
+  if [ "$GH_OK" = "0" ]; then
+    log "  ⚠️ GitHub 两个数据源均失败（gh + trending 网页）"
+  fi
 fi
 
 # ---------- Part 2: 外部技术博客 ----------
