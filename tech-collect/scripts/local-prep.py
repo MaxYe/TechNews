@@ -188,7 +188,10 @@ def extract_github(date):
         desc = r.get("desc", "") or ""
         items.append({
             "repo": r["repo"], "lang": r.get("lang", ""),
-            "stars": r.get("stars_today", 0), "desc": desc,
+            "stars": r.get("stars_today", 0),
+            "total_stars": r.get("total_stars", 0),
+            "source": r.get("source", ""),
+            "desc": desc,
             "text": desc or "（数据源无描述）",          # skill helper 读 text
             "tags": classify(f"{r['repo']} {desc}", kw),
         })
@@ -326,10 +329,16 @@ def write_md_github(items, date):
             desc_line = f"{desc}（{trans}）"
         else:
             desc_line = trans if trans.startswith("（") else f"（无描述）{trans}"
+        if it.get("stars"):
+            star_line = f"今日 Star：+{it['stars']:,}"
+        elif it.get("total_stars"):
+            star_line = f"总 Star：{it['total_stars']:,}（增量待次日快照）"
+        else:
+            star_line = "Star：未知"
         out.append(f"""### {it['_i']+1}. {it['repo']}
 - 描述：{desc_line}
 - 语言：{it['lang'] or '未知'}
-- 今日 Star：+{it['stars']:,}
+- {star_line}
 - 今日亮点：{hl}
 - 分类标签：{tags_fmt(it['tags'])}
 - 链接：https://github.com/{it['repo']}

@@ -25,14 +25,28 @@ echo "============================================="
 log "技术新闻每日采集  $DATE"
 echo "============================================="
 
-# ---------- Part 1: GitHub Trending ----------
-log "📦 Part 1: GitHub Trending"
+# ---------- Part 1: GitHub Trending（gh CLI 优先）----------
+log "📦 Part 1: GitHub Trending（gh 优先）"
+
+GH_OK=0
+if command -v gh >/dev/null 2>&1; then
+  if python3 "$SCRIPTS/gh-github-collect.py" "$DATE"; then
+    GH_OK=1
+  else
+    log "  ⚠️ gh 采集失败 → 降级：trending 网页抓取"
+  fi
+else
+  log "  ⚠️ gh CLI 未安装 → 降级：trending 网页抓取"
+fi
+
 UA="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
-curl -sL -A "$UA" "https://github.com/trending?since=daily" -o "$RAW/github-daily.html" 2>/dev/null
-curl -sL -A "$UA" "https://github.com/trending?since=weekly" -o "$RAW/github-weekly.html" 2>/dev/null
+if [ "$GH_OK" = "0" ]; then
+  curl -sL -A "$UA" "https://github.com/trending?since=daily" -o "$RAW/github-daily.html" 2>/dev/null
+  curl -sL -A "$UA" "https://github.com/trending?since=weekly" -o "$RAW/github-weekly.html" 2>/dev/null
+fi
 
-if [ -s "$RAW/github-daily.html" ]; then
+if [ "$GH_OK" = "0" ] && [ -s "$RAW/github-daily.html" ]; then
   python3 - "$RAW/github-daily.html" "$RAW/github-daily.json" << 'PYEOF'
 import re, sys, json
 html = open(sys.argv[1]).read()
