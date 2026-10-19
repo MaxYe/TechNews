@@ -14,6 +14,22 @@
     "microsoft/autogen",
     "Aider-AI/aider"
   ],
+  "watchlist": [
+    "tt-a1i/archify",
+    "morluto/rea",
+    "anthropics/skills",
+    "deepseek-ai/deepseek-harness"
+  ],
+  "hot_topics": [
+    "agent-skills",
+    "ai-agents",
+    "mcp",
+    "claude-skills",
+    "coding-agents",
+    "deepseek-harness",
+    "dsh-plugin",
+    "model-context-protocol"
+  ],
   "topic_keywords": {
     "AI Coding": ["code", "coding", "IDE", "editor", "copilot", "cursor", "claude code", "codex", "aider", "continue", "windsurf"],
     "Agent 框架": ["agent", "multi-agent", "ReAct", "tool calling", "autonomous", "swarm"],

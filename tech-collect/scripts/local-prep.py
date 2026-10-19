@@ -190,7 +190,9 @@ def extract_github(date):
             "repo": r["repo"], "lang": r.get("lang", ""),
             "stars": r.get("stars_today", 0),
             "total_stars": r.get("total_stars", 0),
+            "avg_daily": r.get("avg_daily", 0),
             "source": r.get("source", ""),
+            "pinned": r.get("pinned", False),
             "desc": desc,
             "text": desc or "（数据源无描述）",          # skill helper 读 text
             "tags": classify(f"{r['repo']} {desc}", kw),
@@ -335,7 +337,10 @@ def write_md_github(items, date):
             star_line = f"总 Star：{it['total_stars']:,}（增量待次日快照）"
         else:
             star_line = "Star：未知"
-        out.append(f"""### {it['_i']+1}. {it['repo']}
+        if it.get("avg_daily"):
+            star_line += f" ｜ 均日 +{it['avg_daily']:,}"
+        pin_mark = "📌 " if it.get("pinned") else ""
+        out.append(f"""### {it['_i']+1}. {pin_mark}{it['repo']}
 - 描述：{desc_line}
 - 语言：{it['lang'] or '未知'}
 - {star_line}
