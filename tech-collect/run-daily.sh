@@ -32,6 +32,8 @@ GH_OK=0
 if command -v gh >/dev/null 2>&1; then
   if python3 "$SCRIPTS/gh-github-collect.py" "$DATE"; then
     GH_OK=1
+    # 关注仓库深度采集（README / Release / 提交活跃度）
+    python3 "$SCRIPTS/gh-repo-detail.py" "$DATE" 2>&1 | sed 's/^/  /'
   else
     log "  ⚠️ gh 采集失败 → 降级：trending 网页抓取"
   fi
