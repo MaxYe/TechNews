@@ -234,12 +234,17 @@ if [ -n "$OLLAMA_STARTED_BY_US" ]; then
 fi
 
 # ---------- 汇总与下一步 ----------
+# ① 内容级摘要：采集到了什么（而非只列路径）
+python3 "$SCRIPTS/daily-digest.py" "$DATE" 2>/dev/null || log "  ⚠️ 摘要生成失败（不影响数据）"
+
+# ② 产物路径与下一步
 echo "============================================="
-log "采集 + 预处理完成，汇总："
+log "采集 + 预处理完成"
 log "  原始数据: $RAW/"
 log "  X 数据:   $RAWX/*.json ($(ls "$RAWX"/*.json 2>/dev/null | wc -l | tr -d ' ') 个账号)"
 log "  本地富化: $LLM_OUT/{github,blog,x}.json"
 log "  报告骨架: output/{github,blog,x}/$DATE-local9b.md"
+log "  完成摘要: $LLM_OUT/digest.md"
 echo ""
 log "【下一步】云端模型：读 $LLM_OUT/*.json → 产出日报与总结"
 log "  - $OUT_GITHUB/$DATE.md"
