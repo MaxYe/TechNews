@@ -91,6 +91,44 @@
       "method": "rss"
     }
   ],
+  "sre_and_engineering": {
+    "note": "2026-10-24 新增：AI SRE / 头部互联网公司工程博客。全部实测 RSS/Atom 可访问。",
+    "sources": [
+      {"name": "SRE Weekly", "url": "https://sreweekly.com/feed/", "method": "rss", "format": "rss",
+       "note": "⭐ SRE 领域核心周报，聚合全网 SRE/AI SRE 文章，含 Google/Netflix 实践"},
+      {"name": "Netflix Tech Blog", "url": "https://netflixtechblog.com/feed", "method": "rss", "format": "rss",
+       "note": "SRE 文化与混沌工程的发源地之一"},
+      {"name": "Meta Engineering", "url": "https://engineering.fb.com/feed/", "method": "rss", "format": "rss"},
+      {"name": "AWS DevOps Blog", "url": "https://aws.amazon.com/blogs/devops/feed/", "method": "rss", "format": "rss"},
+      {"name": "Azure DevOps Blog", "url": "https://devblogs.microsoft.com/devops/feed/", "method": "rss", "format": "rss"},
+      {"name": "Cloudflare Blog", "url": "https://blog.cloudflare.com/rss/", "method": "rss", "format": "rss",
+       "note": "基础设施可靠性与事故复盘的一手来源"},
+      {"name": "Slack Engineering", "url": "https://slack.engineering/feed/", "method": "rss", "format": "rss"},
+      {"name": "GitHub Blog", "url": "https://github.blog/feed/", "method": "rss", "format": "rss"},
+      {"name": "Grafana Blog", "url": "https://grafana.com/blog/index.xml", "method": "rss", "format": "rss",
+       "note": "可观测性（SRE 核心工具域）"},
+      {"name": "New Relic Blog", "url": "https://newrelic.com/blog/feed", "method": "rss", "format": "rss",
+       "note": "可观测性/APM"},
+      {"name": "Spotify Engineering", "url": "https://engineering.atspotify.com/feed/", "method": "rss", "format": "rss"},
+      {"name": "Shopify Engineering", "url": "https://shopify.engineering/blog.atom", "method": "rss", "format": "atom",
+       "note": "Atom 格式，需解析器 <entry> 支持"},
+      {"name": "Zalando Engineering", "url": "https://engineering.zalando.com/atom.xml", "method": "rss", "format": "atom",
+       "note": "Atom 格式，需解析器 <entry> 支持"}
+    ]
+  },
+  "unreachable_verified": {
+    "note": "2026-10-24 实测不可达（拉黑/DNS 层不可达），已排除",
+    "hosts": {
+      "cloud.google.com": "Google Cloud Blog（含 SRE 板块）DNS/连接层不可达，curl=000，mearl 浏览器兜底亦失败。Google SRE 内容改由 SRE Weekly 间接覆盖。",
+      "sre.google": "同上，不可达",
+      "rsshub.app": "RSSHub 公共实例不可达；rsshub.rssforever.com 返回 503",
+      "engineering.fb.com": "可达（已在采集中）",
+      "medium.com/feed/*": "Airbnb/Pinterest 等 Medium 系 feed 不可达（000）",
+      "uber.com/blog": "406 拒绝",
+      "honeycomb.io / datadoghq.com / pagerduty.com / incident.io": "RSS 路径返回 404（无公开 feed）",
+      "discord.com / etsy.com / linkedin.com": "不可达或 404"
+    }
+  },
   "known_blocked": [
     "anthropic.com",
     "ai.meta.com",
@@ -98,6 +136,37 @@
     "blogs.microsoft.com/ai"
   ],
   "topic_keywords": {
+    "SRE/可靠性": [
+      "SRE",
+      "site reliability",
+      "reliability engineering",
+      "on-call",
+      "oncall",
+      "incident",
+      "incident response",
+      "postmortem",
+      "post-mortem",
+      "runbook",
+      "playbook",
+      "SLO",
+      "SLI",
+      "SLA",
+      "error budget",
+      "MTTR",
+      "outage",
+      "blameless",
+      "chaos engineering",
+      "capacity planning",
+      "toil",
+      "AIOps",
+      "observability",
+      "monitoring",
+      "alerting",
+      "alert fatigue",
+      "root cause",
+      "production readiness",
+      "disaster recovery"
+    ],
     "AI Coding": [
       "code generation",
       "code",

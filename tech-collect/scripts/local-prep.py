@@ -36,6 +36,20 @@ LLM_OUT = os.path.join(BASE, "tmp", "llm-out")
 WINDOW_DAYS = int(os.environ.get("TIME_WINDOW", "3"))
 BATCH = int(os.environ.get("BATCH_SIZE", "5"))
 
+# 低频源（周报/半月更）用更长窗口，否则 3 天窗口内基本采集不到内容。
+# 高频源（日报/日更多篇）仍用 WINDOW_DAYS，避免日报被历史条目淹没。
+LOW_FREQ_WINDOW_DAYS = int(os.environ.get("LOW_FREQ_WINDOW", "10"))
+LOW_FREQ_SOURCES = {
+    "sre-weekly",      # 每周一期
+    "meta-eng",        # 低频
+    "aws-devops",
+    "azure-devops",
+    "spotify-eng",
+    "shopify-eng",
+    "zalando-eng",
+    "slack-eng",
+}
+
 
 def log(msg):
     print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
@@ -202,7 +216,8 @@ def extract_github(date):
 
 def extract_blog(date):
     raw = os.path.join(BASE, "tmp", "raw", date)
-    cutoff = datetime.strptime(date, "%Y-%m-%d") - timedelta(days=WINDOW_DAYS)
+    base_dt = datetime.strptime(date, "%Y-%m-%d")
+    cutoff = base_dt - timedelta(days=WINDOW_DAYS)
     kw = load_config("blog-sources.json").get("topic_keywords", {})
     items = []
     for f in sorted(glob.glob(os.path.join(raw, "*.xml"))):
@@ -210,8 +225,15 @@ def extract_blog(date):
         if base.startswith("github-"):
             continue
         src = base.replace("blog-", "").replace(".xml", "")
+        # 低频源使用更长窗口
+        src_cutoff = (base_dt - timedelta(days=LOW_FREQ_WINDOW_DAYS)
+                      if src in LOW_FREQ_SOURCES else cutoff)
         t = open(f, encoding="utf-8", errors="ignore").read()
-        for b in re.split(r"<item>", t)[1:12]:
+        # 同时支持 RSS(<item>) 与 Atom(<entry>)：部分工程博客只用 Atom
+        blocks = re.split(r"<item>", t)[1:12]
+        if not blocks:
+            blocks = re.split(r"<entry(?:\s[^>]*)?>", t)[1:12]
+        for b in blocks:
             tm = re.search(r"<title[^>]*>(.*?)</title>", b, re.DOTALL)
             dm = re.search(r"<(pubDate|published|updated)>(.*?)</\1>", b, re.DOTALL)
             cm = re.search(r"<(?:description|summary|content:encoded)>(.*?)</(?:description|summary|content:encoded)>",
@@ -220,7 +242,7 @@ def extract_blog(date):
             if not tm:
                 continue
             dt = parse_rss_date(dm.group(2) if dm else "")
-            if dt and dt < cutoff:
+            if dt and dt < src_cutoff:
                 continue
             title = clean(tm.group(1))
             desc = clean(cm.group(1) if cm else "")[:350]

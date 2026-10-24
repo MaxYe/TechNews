@@ -94,7 +94,20 @@ eugeneyan|https://eugeneyan.com/rss/
 latent-space|https://www.latent.space/feed
 microsoft-ai|https://news.microsoft.com/source/topics/ai/feed/
 hn-frontpage|https://hnrss.org/frontpage
-infoq-cn|https://www.infoq.cn/feed"
+infoq-cn|https://www.infoq.cn/feed
+sre-weekly|https://sreweekly.com/feed/
+netflix-tech|https://netflixtechblog.com/feed
+meta-eng|https://engineering.fb.com/feed/
+aws-devops|https://aws.amazon.com/blogs/devops/feed/
+azure-devops|https://devblogs.microsoft.com/devops/feed/
+cloudflare-blog|https://blog.cloudflare.com/rss/
+slack-eng|https://slack.engineering/feed/
+github-blog|https://github.blog/feed/
+grafana-blog|https://grafana.com/blog/index.xml
+newrelic-blog|https://newrelic.com/blog/feed
+spotify-eng|https://engineering.atspotify.com/feed/
+shopify-eng|https://shopify.engineering/blog.atom
+zalando-eng|https://engineering.zalando.com/atom.xml"
 
 while IFS='|' read -r name url; do
   [ -z "$name" ] && continue
