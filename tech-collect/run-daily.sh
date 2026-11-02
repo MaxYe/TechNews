@@ -88,10 +88,10 @@ fi
 log "📦 Part 2: 外部技术博客"
 FEEDS="openai|https://openai.com/news/rss.xml
 google-ai|https://blog.google/innovation-and-ai/technology/ai/rss/
+google-dev|https://blog.google/technology/developers/rss/
 simonwillison|https://simonwillison.net/atom/everything/
 huyenchip|https://huyenchip.com/feed.xml
 eugeneyan|https://eugeneyan.com/rss/
-latent-space|https://www.latent.space/feed
 microsoft-ai|https://news.microsoft.com/source/topics/ai/feed/
 hn-frontpage|https://hnrss.org/frontpage
 infoq-cn|https://www.infoq.cn/feed

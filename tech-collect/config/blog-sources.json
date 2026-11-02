@@ -117,7 +117,13 @@
     ]
   },
   "unreachable_verified": {
-    "note": "2026-10-24 实测不可达（拉黑/DNS 层不可达），已排除",
+    "note": "2026-11-02 更新：latent-space 连续 5 日失败已从 FEEDS 移除；google-ai 不稳定已加 google-dev 备用源",
+    "removed_sources": {
+      "latent-space": "https://www.latent.space/feed —— Substack 系，DNS 可解析但连接超时（Cloudflare IP）。10-28/30/31、11-01/02 连续失败，2026-11-02 移除。若网络恢复可重新加入。"
+    },
+    "added_fallback": {
+      "google-dev": "https://blog.google/technology/developers/rss/ —— 2026-11-02 实测可达（71 条目）。google-ai 主源从 11-01 起不稳定（curl 000），此源作为 Google 内容兜底。"
+    },
     "hosts": {
       "cloud.google.com": "Google Cloud Blog（含 SRE 板块）DNS/连接层不可达，curl=000，mearl 浏览器兜底亦失败。Google SRE 内容改由 SRE Weekly 间接覆盖。",
       "sre.google": "同上，不可达",
