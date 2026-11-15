@@ -334,6 +334,18 @@ def write_json(items, date, kind):
     log(f"  ✓ 中文富化 JSON（供云端模型读）: {p}")
 
 
+def clear_stale(date, kind):
+    """无数据时清理同日期残留产物，防止把陈旧数据当作今日数据。"""
+    removed = []
+    for p in (os.path.join(LLM_OUT, date, f"{kind}.json"),
+              os.path.join(BASE, "output", kind, f"{date}-local9b.md")):
+        if os.path.exists(p):
+            os.remove(p)
+            removed.append(os.path.relpath(p, BASE))
+    if removed:
+        log(f"  🧹 已清理历史产物（本次无数据）: {', '.join(removed)}")
+
+
 def write_md_github(items, date):
     out = [f"""# GitHub Trending - {date}（本地 qwen3.5 预处理）
 
@@ -443,6 +455,7 @@ def prep_github(date):
     items = extract_github(date)
     if not items:
         log("  ⚠️ 无数据，跳过")
+        clear_stale(date, "github")
         return
     log(f"  抽取 {len(items)} 个仓库")
     # 只送 text 给 skill helper
@@ -458,6 +471,7 @@ def prep_blog(date):
     items = extract_blog(date)
     if not items:
         log("  ⚠️ 无数据，跳过")
+        clear_stale(date, "blog")
         return
     log(f"  抽取 {len(items)} 篇")
     llm_items = [{"i": i, "src": it["src"], "title": it["title"], "text": it["text"]}
@@ -473,6 +487,7 @@ def prep_x(date):
     items = extract_x(date)
     if not items:
         log("  ⚠️ 无数据，跳过")
+        clear_stale(date, "x")
         return
     log(f"  抽取 {len(items)} 条推文")
     llm_items = [{"i": i, "text": it["text"]} for i, it in enumerate(items)]

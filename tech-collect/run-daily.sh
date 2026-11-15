@@ -162,6 +162,12 @@ fi
 
 # ---------- Part 3: X.com ----------
 log "📦 Part 3: X.com（Mearl 复用浏览器登录态）"
+# 关键保护：先清空旧账号数据，防止采集失败时 Part 4 把陈旧数据当作今日数据
+OLDX=$(ls "$RAWX"/*.json 2>/dev/null | wc -l | tr -d ' ')
+if [ "${OLDX:-0}" -gt 0 ]; then
+  rm -f "$RAWX"/*.json 2>/dev/null || true
+  log "  🧹 已清理 ${OLDX} 个历史账号文件（避免复用陈旧数据）"
+fi
 if command -v mearl >/dev/null 2>&1; then
   conn=$(mearl browser_list 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('connectedCount',0))" 2>/dev/null || echo 0)
   if [ "${conn:-0}" -ge 1 ]; then
