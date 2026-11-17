@@ -6,6 +6,19 @@
 # ============================================================
 set -uo pipefail
 
+# --- 环境自愈：nvm 的 node 版本路径会随升级变化，动态探测含 mearl/node 的 bin ---
+# 背景：PATH 中可能残留已删除的 nvm 版本路径，导致 mearl（X.com 采集依赖）找不到。
+if ! command -v mearl >/dev/null 2>&1; then
+  for nb in "$HOME"/.nvm/versions/node/*/bin; do
+    if [ -x "$nb/mearl" ]; then export PATH="$nb:$PATH"; break; fi
+  done
+fi
+if ! command -v node >/dev/null 2>&1; then
+  for nb in "$HOME"/.nvm/versions/node/*/bin; do
+    if [ -x "$nb/node" ]; then export PATH="$nb:$PATH"; break; fi
+  done
+fi
+
 DATE="${1:-$(date +%Y-%m-%d)}"
 BASE="$(cd "$(dirname "$0")" && pwd)"
 OUT_GITHUB="$BASE/output/github"
